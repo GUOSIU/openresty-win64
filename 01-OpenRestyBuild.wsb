@@ -1,0 +1,19 @@
+<Configuration>
+  <!-- Edit HostFolder to the absolute path where you cloned this repository.
+       Windows Sandbox only accepts absolute paths here; the folder must exist
+       before launch, otherwise the sandbox refuses to start.
+       SandboxFolder is a path INSIDE the sandbox (WDAGUtilityAccount is the
+       fixed sandbox user), it does not need to exist on the host. -->
+  <MappedFolders>
+    <MappedFolder>
+      <HostFolder>D:\openresty-win64</HostFolder>
+      <SandboxFolder>C:\Users\WDAGUtilityAccount\Desktop\openresty-win64</SandboxFolder>
+      <ReadOnly>false</ReadOnly>
+    </MappedFolder>
+  </MappedFolders>
+
+  <!-- 8 GB is enough for -j4; drop to 4096 if the host is small, raise for -j8+. -->
+  <MemoryInMB>8192</MemoryInMB>
+  <Networking>Enable</Networking>
+  <ClipboardRedirection>Enable</ClipboardRedirection>
+</Configuration>

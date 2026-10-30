@@ -1,0 +1,36 @@
+# ---- build inputs / outputs (never commit) --------------------------------
+deps/
+dist/
+log/
+
+# ---- binaries: the MSYS2 installer is 80+ MB, download it yourself ---------
+*.exe
+*.dll
+*.so
+*.a
+*.pdb
+
+# ---- archives --------------------------------------------------------------
+*.zip
+*.tar.gz
+*.tar.xz
+*.tar.zst
+
+# ---- local logs ------------------------------------------------------------
+setup-log.txt
+build-log.txt
+build-output.log
+console-*.log
+*.log
+
+# ---- scratch / work trees --------------------------------------------------
+work/
+orbuild-*/
+
+# ---- OS / editor -----------------------------------------------------------
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
+*.swp
