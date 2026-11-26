@@ -1,5 +1,5 @@
 # build-all.ps1  (v2)
-# Run the OpenResty 1.31.8.1 x64 build inside the sandbox.
+# Run the OpenResty 1.31.9.1 x64 build inside the sandbox.
 # Wraps build-openresty.sh so it runs in the MSYS2 MINGW64 environment and
 # drops the finished zip into .\dist (mapped back to the host).
 #
@@ -19,7 +19,8 @@ param(
     # installs). CI uses C:\msys64, which msys2/setup-msys2@v2 provides.
     [string] $MsysRoot   = '',
     # Version knobs for a new release. Leave empty to use the defaults baked
-    # into build-openresty.sh (currently openresty 1.31.8.1 / openssl 3.5.9).
+    # into build-openresty.sh (currently openresty 1.31.9.1 / openssl 3.5.9 /
+    # pcre2 10.49 / zlib 1.3.2).
     [string] $Version    = '',
     [string] $OpenSSLVer = '',
     [string] $Pcre2Ver   = '',

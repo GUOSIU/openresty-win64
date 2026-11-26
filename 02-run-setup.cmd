@@ -19,7 +19,7 @@ rem UTF-8 code page so Chinese never turns into mojibake
 chcp 65001 >nul
 
 echo ============================================================
-echo  OpenResty 1.31.8.1 x64 - STEP 2/3: MSYS2 setup
+echo  OpenResty 1.31.9.1 x64 - STEP 2/3: MSYS2 setup
 echo  Full log: %~dp0log\setup-<timestamp>.txt
 echo  The window stays open when it finishes; close it manually.
 echo ============================================================

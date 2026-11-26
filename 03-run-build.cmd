@@ -4,7 +4,7 @@ rem  03-run-build.cmd - STEP 3 of 3: compile and package OpenResty for x64.
 rem
 rem    03-run-build.cmd                    (jobs = CPU count)
 rem    03-run-build.cmd -Jobs 4            (options are passed to build-all.ps1)
-rem    03-run-build.cmd -Version 1.32.1.1 -OpenSSLVer 3.6.0   (new release)
+rem    03-run-build.cmd -Version 1.31.9.1 -OpenSSLVer 3.5.9   (override version knobs)
 rem
 rem  Full log: build-log.txt / build-output.log (written by the script itself).
 rem  Requires STEP 2 in the SAME sandbox session (MSYS2 lives in the VM only).
@@ -15,7 +15,7 @@ rem UTF-8 code page so Chinese never turns into mojibake
 chcp 65001 >nul
 
 echo ============================================================
-echo  OpenResty 1.31.8.1 x64 - STEP 3/3: build
+echo  OpenResty 1.31.9.1 x64 - STEP 3/3: build
 echo  Full log: %~dp0log\build-<timestamp>.txt
 echo  Expect 15-40 minutes. Do not close the sandbox window.
 echo ============================================================

@@ -1,14 +1,14 @@
-# 在 Windows 11 沙盒（Windows Sandbox）中编译 OpenResty 1.31.8.1 x64
+# 在 Windows 11 沙盒（Windows Sandbox）中编译 OpenResty 1.31.9.1 x64
 
 本文档描述如何在一台 **Windows 11** 主机上，用一次性 **Windows Sandbox** 会话编译出
-OpenResty **1.31.8.1（nginx core 1.31.8 / OpenSSL 3.5.9 / LuaJIT 2.1-20261023）** 的
+OpenResty **1.31.9.1（nginx core 1.31.9 / OpenSSL 3.5.9 / LuaJIT 2.1-20261117）** 的
 Windows 64 位原生版本。
 
 ---
 
 ## 0. 先明确一件事：官方没有 Windows 二进制包
 
-- [下载页](https://openresty.org/en/download.html) 只提供 Linux 包（apt/dnf/apk）、Docker 镜像、Homebrew 和源码 `openresty-1.31.8.1.tar.gz`。
+- [下载页](https://openresty.org/en/download.html) 只提供 Linux 包（apt/dnf/apk）、Docker 镜像、Homebrew 和源码 `openresty-1.31.9.1.tar.gz`。
 - OpenResty 历史上最后一个官方 Windows 二进制是 `openresty-1.9.15.1-win32.zip`（2016 年，32 位）。
   `doc/README-windows.md` 里“官网提供 Win32/Win64 二进制”的说法已经过期。
 - Windows 版 nginx 端口本身的功能限制（编译产物也逃不掉）：
@@ -54,7 +54,7 @@ Enable-WindowsOptionalFeature -Online -FeatureName "Containers-DisposableClientV
 - 编译本身约 **15–40 分钟**（取决于核数），期间**不要关窗口**；
 - 映射目录默认只读，本方案里显式设为可写，产物直接落回主机。
 
-> 如果只是偶尔编一次：按下面流程走完，把 `dist\openresty-1.31.8.1-win64.zip` 留在主机上即可。
+> 如果只是偶尔编一次：按下面流程走完，把 `dist\openresty-1.31.9.1-win64.zip` 留在主机上即可。
 > 如果要反复编多次：改用 Hyper-V 虚拟机 / 持久化 VM，别用沙盒。
 
 ---
@@ -84,7 +84,7 @@ openresty-win64\
 ```
 
 执行顺序就是编号顺序：**01 → 02 → 03**。三个入口都支持参数直传：
-`02-run-setup.cmd -PacmanMirror <url>`、`03-run-build.cmd -Jobs 4 -Version 1.32.1.1`。
+`02-run-setup.cmd -PacmanMirror <url>`、`03-run-build.cmd -Jobs 4 -Version 1.31.9.1`。
 
 两个 ps1 都带：分阶段进度、transcript、失败时的结构化报错块（阶段 / 行号 / 栈 / hint / 诊断），
 以及 `0`/`1` 退出码。详见第 5 节。
@@ -95,10 +95,10 @@ openresty-win64\
 |---|---|---|---|---|
 | MSYS2 安装器 | latest | 81–120 MB | `github.com/msys2/msys2-installer` → 备用 `repo.msys2.org/distrib/` | **是**（已有官方镜像兜底） |
 | pacman 包（工具链 / base-devel / perl …） | — | 300–500 MB | `repo.msys2.org`、`mirror.msys2.org` 等 MSYS2 镜像 | 否 |
-| OpenResty 源码 | 1.31.8.1 | 6.5 MB | `openresty.org/download/` | 否 |
+| OpenResty 源码 | 1.31.9.1 | 6.5 MB | `openresty.org/download/` | 否 |
 | **OpenSSL** | 3.5.9 | **50.8 MB** | `github.com/openssl/openssl/releases` | **是（体积最大、最易被重置）** |
 | PCRE2 | 10.49 | ≈2.5 MB | `github.com/PCRE2Project/pcre2/releases` | 是（小文件，风险低） |
-| zlib | 1.3.2 | ≈1.3 MB | `zlib.net` → 备用 `zlib.net/fossils/`、`github.com/madler/zlib` | 否（备用源是） |
+| zlib | 1.3.2 | ≈1.3 MB | `zlib.net/fossils/` → 备用 `zlib.net`、`github.com/madler/zlib` | 否（备用源是） |
 
 编译期真正从 GitHub 拉的是 **OpenSSL + PCRE2 ≈ 53 MB**，加上安装器 81 MB。
 
@@ -113,10 +113,10 @@ openresty-win64\
 手工预下载（主机上任选 HTTP 客户端，支持断点续传的最好），把文件放进 `deps\` 即可：
 
 ```
-https://openresty.org/download/openresty-1.31.8.1.tar.gz
+https://openresty.org/download/openresty-1.31.9.1.tar.gz
 https://github.com/openssl/openssl/releases/download/openssl-3.5.9/openssl-3.5.9.tar.gz
 https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.49/pcre2-10.49.tar.gz
-https://zlib.net/zlib-1.3.2.tar.gz
+https://zlib.net/fossils/zlib-1.3.2.tar.gz
 ```
 
 MSYS2 故意装到 `%LOCALAPPDATA%\msys64`（即 `C:\Users\WDAGUtilityAccount\...`），
@@ -331,8 +331,8 @@ perl msys        # 或 cygwin
 脚本流程：
 
 1. 环境自检（`MSYSTEM=MINGW64`、编译器 target、`perl`/`make`/`patch`）；
-2. 下载 4 个源码包到 `~/orbuild-1.31.8.1/dl`：
-   `openresty-1.31.8.1.tar.gz`、`openssl-3.5.9.tar.gz`、`pcre2-10.49.tar.gz`、`zlib-1.3.2.tar.gz`；
+2. 下载 4 个源码包到 `~/orbuild-1.31.9.1/dl`：
+   `openresty-1.31.9.1.tar.gz`、`openssl-3.5.9.tar.gz`、`pcre2-10.49.tar.gz`、`zlib-1.3.2.tar.gz`；
 3. 解包到 `objs/lib`，并给 OpenSSL 打上 OpenResty 补丁
    `patches/openssl-*-sess_set_get_cb_yield.patch`（`ssl_certificate_by_lua*` 需要，补丁文件名按通配匹配，避免版本号变化导致卡住）；
 4. `./configure --platform=msys ...`（参数与官方 `util/build-win32.sh` 一致：
@@ -340,8 +340,8 @@ perl msys        # 或 cygwin
    `--with-luajit-xcflags="-DLUAJIT_NUMMODE=2 -DLUAJIT_ENABLE_LUA52COMPAT"` 等）；
 5. `make -j$JOBS` → `make install DESTDIR=stage`；
 6. `nginx.exe -V` 冒烟测试；
-7. 打包为 `dist\openresty-1.31.8.1-win64.zip`（无 `zip` 时退化为 `.tar.gz`）。
-   压缩包内**含一层同名目录** `openresty-1.31.8.1-win64/`，解压后所有文件都在这一层里，
+7. 打包为 `dist\openresty-1.31.9.1-win64.zip`（无 `zip` 时退化为 `.tar.gz`）。
+   压缩包内**含一层同名目录** `openresty-1.31.9.1-win64/`，解压后所有文件都在这一层里，
    不会散落到当前目录；脚本打包后会校验首个条目确实是该目录，否则直接报错。
    打包前会把目录整理成**与官方 Windows 包一致的布局**（官方解压后只有 18 个条目）：
    - 删除官方包没有的：`md2pod.pl`、`nginx-xml2pod`（文档生成器）、`opm`、`resty.index`、`site/`
@@ -356,23 +356,23 @@ perl msys        # 或 cygwin
 
 ### 4.4 回到主机使用产物
 
-主机上会出现 `openresty-win64\dist\openresty-1.31.8.1-win64.zip`，解压到 `C:\` 即可得到 `C:\openresty-1.31.8.1-win64\`：
+主机上会出现 `openresty-win64\dist\openresty-1.31.9.1-win64.zip`，解压到 `C:\` 即可得到 `C:\openresty-1.31.9.1-win64\`：
 
 ```powershell
-Expand-Archive .\openresty-win64\dist\openresty-1.31.8.1-win64.zip -DestinationPath C:\ -Force
-C:\openresty-1.31.8.1-win64\nginx.exe -V
+Expand-Archive .\openresty-win64\dist\openresty-1.31.9.1-win64.zip -DestinationPath C:\ -Force
+C:\openresty-1.31.9.1-win64\nginx.exe -V
 ```
 
 想放到别处，把整个目录移走即可（`nginx.exe` 用相对前缀 `--prefix=.`，整个文件夹可以任意搬迁）：
 
 ```powershell
-Move-Item C:\openresty-1.31.8.1-win64 C:\openresty
+Move-Item C:\openresty-1.31.9.1-win64 C:\openresty
 ```
 
 启动 / 停止（Windows 版 nginx 没有服务模式，用 `start` 起）：
 
 ```powershell
-cd C:\openresty-1.31.8.1-win64
+cd C:\openresty-1.31.9.1-win64
 start nginx                 # 或 start nginx -p .\myapp
 tasklist /fi "imagename eq nginx.exe"
 nginx -s reload             # 重载配置
@@ -437,12 +437,16 @@ connectivity : curl ... HTTP 200
 
 - 实测情况（Windows 11 沙盒，PS 5.1.26100，6 核）：
   `setup-msys2.ps1` 完整跑通（9 分钟 / 2.3 分钟，gcc 16.2.0 + make 4.4.1）；
-  `build-all.ps1` 已产出 `dist\openresty-1.31.8.1-win64.zip`（21 MB），
-  `nginx.exe -V` 输出 `openresty/1.31.8.1`、`built with OpenSSL 3.5.9`、`TLS SNI support enabled`。
-  全流程约 25 分钟（6 核 `-j6`），其中 OpenSSL 编译占大头。
+  `build-all.ps1` 已产出 `dist\openresty-1.31.9.1-win64.zip`（20.7 MB，504 个条目），
+  `nginx.exe -V` 输出 `openresty/1.31.9.1`、`built with OpenSSL 3.5.9`、`TLS SNI support enabled`，
+  `luajit.exe -e "print(jit.version, jit.arch, jit.os)"` 输出 `LuaJIT 2.1.ROLLING x64 Windows`。
+  全流程约 13 分 36 秒（6 核 `-j6`），其中 OpenSSL 编译占大头；1.31.8.1 上次实测为 14 分 19 秒。
+- **依赖与 configure**：OpenSSL 3.5.9 / PCRE2 10.49 / zlib 1.3.2，与 1.31.8.1 完全相同；
+  configure 参数对照官方 tag `v1.31.9.1` 的 `util/build-win32.sh` 也未变，
+  因此流程、产物布局、体积与耗时都和 1.31.8.1 基本一致。
 - 产物是 `select()` + 单 worker + 1024 连接的开发版本；压测/生产请用 WSL2 或 Docker 的官方 Linux 包。
 - **调试符号一律保留**（与官方一致）：`nginx.exe` 约 45 MB、zip 约 21 MB 属正常。
-  不提供 strip/去 `-g` 选项——需要看 C 栈时直接 GDB 即可，见 9.4。
+  不提供 strip/去 `-g` 选项——需要看 C 栈时直接 GDB 即可，见 8.4。
 
 ---
 
@@ -451,7 +455,7 @@ connectivity : curl ... HTTP 200
 版本号是**单一来源**，不需要改多处。四个值集中在 `build-openresty.sh` 顶部：
 
 ```bash
-VERSION="${VERSION:-1.31.8.1}"        # OpenResty 版本
+VERSION="${VERSION:-1.31.9.1}"        # OpenResty 版本
 OPENSSL_VER="${OPENSSL_VER:-3.5.9}"
 PCRE2_VER="${PCRE2_VER:-10.49}"
 ZLIB_VER="${ZLIB_VER:-1.3.2}"
@@ -462,10 +466,11 @@ ZLIB_VER="${ZLIB_VER:-1.3.2}"
 **A. 不改脚本，命令行覆盖（推荐，便于随时回退）**
 
 ```powershell
-.\03-run-build.cmd -Jobs 6 -Version 1.32.1.1 -OpenSSLVer 3.6.0 -Pcre2Ver 10.50 -ZlibVer 1.3.2
+.\03-run-build.cmd -Jobs 6 -Version 1.31.9.1 -OpenSSLVer 3.5.9 -Pcre2Ver 10.49 -ZlibVer 1.3.2
 ```
 
-`03-run-build.cmd` 会把参数原样传给 `build-all.ps1`，后者再导出成环境变量给 bash。只传 `-Version` 时，其余三项沿用默认值（可能是旧版本，见 8.2）。
+上面显式写的正是**当前默认值**，只是为了演示参数语法；换新版本时把这四项一起换成该版本配套的版本号。
+`03-run-build.cmd` 会把参数原样传给 `build-all.ps1`，后者再导出成环境变量给 bash。只传 `-Version` 时，其余三项沿用默认值（可能是旧版本，见 7.2）。
 
 **B. 改默认值（长期切到新主线）**
 
@@ -474,7 +479,9 @@ ZLIB_VER="${ZLIB_VER:-1.3.2}"
 ### 7.2 需要一起确认的三件事
 
 1. **组件版本要跟着改**。OpenResty 每个版本捆绑的 OpenSSL / PCRE2 / zlib 是变化的，必须与版本对应，否则会链接进旧库。
-   来源：发布说明 `https://openresty.org/en/changelog-<数字>.html` 的 Components 一节，或 `openresty -V` 输出。
+   来源：官方 tag 的 `util/build-win32.sh` 顶部三行（`PCRE=` / `ZLIB=` / `OPENSSL=`），例如
+   `https://github.com/openresty/openresty/blob/v1.31.9.1/util/build-win32.sh`。
+   （近几版 changelog 已不再列 Components，别再去那里找。）
 2. **OpenSSL 补丁要能打上**。脚本按“精确版本 → 同主次版本 → 全部”顺序逐个 `patch -F0 --dry-run` 试，自动挑选；
    若新版 OpenSSL 一份都不匹配，会明确报错并列出候选，可用 `SKIP_OPENSSL_PATCH=1` 跳过（只影响 `ssl_session_*_by_lua` 的 yield 能力）。
 3. **configure 选项可能变**。若新版 OpenResty 增删了模块（例如去掉 `--without-http_rds_json_module` 支持的模块），
@@ -502,6 +509,26 @@ C:\openresty-<新版本>-win64\nginx.exe -V
 
 再跑一次 `resty -e "ngx.say(ngx.config.ngx_lua_version)"` 确认 Lua 侧正常，最后按 4.4 的流程起服务验证 HTTP 200。
 
+### 7.5 1.31.9.1 相对 1.31.8.1 的要点
+
+本次换版**只动了 `VERSION`**，三个依赖库仍为 OpenSSL 3.5.9 / PCRE2 10.49 / zlib 1.3.2，
+configure 参数与官方 `util/build-win32.sh` 一致，所以构建流程和产物布局都不用改。功能上值得注意的：
+
+- **nginx core 1.31.9**：合入 10 个上游安全修复（HTTP/2 流量控制内存破坏、HTTP/2 与 HTTP/3 的
+  stream 创建 use-after-free、DNS 响应与 mail proxy 的 use-after-free、`try_files` + `alias`
+  缓冲区溢出、TLS 请求体读取死循环、stream TLS 客户端证书校验错配、PROXY protocol v2 空指针、
+  `ssl_preread` 对 ClientHello 校验不足等）；另外拒绝不带冒号的 header 行和 framing 开销过大的
+  chunked 请求体。
+- **LuaJIT 2.1-20261117**：FFI 数组初始化边界检查、位运算转换、指针符号扩展、`select()` JIT
+  记录、x64 GC64 下的转换/存储代码生成等修复。
+- **encrypted-session-nginx-module v0.11**：新 token 改用随机 IV + HMAC-SHA256，**旧 token 一律失效**。
+  多实例之间交换 session 的，要先全部升级再签发新 session，否则会出现登录态互不认。
+- **lua-resty-openssl 1.10.0 + 新增 lua-resty-openssl-aux-module 0.3.0**（默认随 lua-resty-openssl 一起构建），
+  以及 lua-nginx-module / stream-lua-nginx-module / lua-resty-core / lua-resty-lock 等库的小版本升级。
+  新增的 `ngx.ssl.clienthello` 选 cipher、`ngx.shared.DICT:compare_expire()` 等能力需要相应 Lua 库版本配合。
+- **Windows 构建侧**：官方把 zlib 下载源换成了 `zlib.net/fossils/` 的 HTTPS 归档，
+  本仓库的 `fetch` 顺序也已同步（fossils 优先）。
+
 ---
 
 ## 8. 编译速度
@@ -510,9 +537,10 @@ C:\openresty-<新版本>-win64\nginx.exe -V
 
 | 场景 | 耗时 | 说明 |
 |---|---|---|
-| 完整编译（含打包） | **14 分 19 秒** | 2026-10-30 11:49:28 → 12:03:47，`RESULT: OK` |
+| 完整编译 1.31.9.1（含打包） | **13 分 36 秒** | 2026-11-26 16:46:48 → 17:00:26，`RESULT: OK`，zip 20.7 MB |
+| 完整编译 1.31.8.1（含打包） | **14 分 19 秒** | 2026-10-30 11:49:28 → 12:03:47，`RESULT: OK` |
 | 其中 `make install` + 目录整理 + zip | 约 1.5 分钟 | 见日志尾段 |
-| `setup-msys2.ps1`（网络好） | 2 分 14 秒 | 144 MB pacman 包 |
+| `setup-msys2.ps1`（网络好） | 2 分 14 秒 / 2 分 24 秒 | 144 MB pacman 包；后者是 1.31.9.1 那次 |
 | `setup-msys2.ps1`（首次，镜像慢） | 9 分 01 秒 | 同样内容，仅网络差别 |
 | 失败在打补丁那次 | 18 秒 | 秒级失败，说明前置阶段很快 |
 

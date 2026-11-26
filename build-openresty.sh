@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build OpenResty 1.31.8.1 for Windows x64 inside an MSYS2 **MINGW64** shell.
+# Build OpenResty 1.31.9.1 for Windows x64 inside an MSYS2 **MINGW64** shell.
 # Mirrors openresty/util/build-win32.sh but with explicit https URLs,
 # progress logging and a staged package output.
 #
@@ -17,14 +17,24 @@ trap 'printf "\nERROR: %s:%s exited %s while running: %s\n" \
 # Everything else (package name, README.txt, patch selection, nginx dir) is
 # derived from these four values.
 #
-#   VERSION=1.32.1.1 OPENSSL_VER=3.6.0 ./build-openresty.sh
-#   or: powershell ... -File .\build-all.ps1 -Version 1.32.1.1 -OpenSSLVer 3.6.0
+#   VERSION=1.31.9.1 OPENSSL_VER=3.5.9 ./build-openresty.sh
+#   or: powershell ... -File .\build-all.ps1 -Version 1.31.9.1 -OpenSSLVer 3.5.9
 #
-# Where to find the numbers for a new release: the announcement page
-# https://openresty.org/en/changelog-<nginx-version-digits>.html lists the
-# bundled OpenSSL / PCRE2 / zlib versions ("Components" section).
+# The examples spell out the current defaults on purpose; for a future release
+# replace all four values with the ones pinned by that release's
+# util/build-win32.sh.
+#
+# Where to find the numbers for a new release: the release's own
+# util/build-win32.sh (github.com/openresty/openresty/blob/v<VERSION>/util/build-win32.sh)
+# pins PCRE / ZLIB / OPENSSL at the top. The changelog page
+# https://openresty.org/en/changelog-<nginx-version-digits>.html no longer lists
+# them in a "Components" section.
+#
+# 1.31.9.1 (2026-11-23) keeps the 1.31.8.1 dependencies unchanged: OpenSSL
+# 3.5.9 / PCRE2 10.49 / zlib 1.3.2. Only VERSION moved, so no component pin
+# below had to change for this release.
 # =============================================================================
-VERSION="${VERSION:-1.31.8.1}"
+VERSION="${VERSION:-1.31.9.1}"
 OPENSSL_VER="${OPENSSL_VER:-3.5.9}"
 ZLIB_VER="${ZLIB_VER:-1.3.2}"
 PCRE2_VER="${PCRE2_VER:-10.49}"
@@ -110,9 +120,13 @@ fetch "openssl-$OPENSSL_VER.tar.gz" \
       "https://github.com/openssl/openssl/releases/download/openssl-$OPENSSL_VER/openssl-$OPENSSL_VER.tar.gz"
 fetch "pcre2-$PCRE2_VER.tar.gz" \
       "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$PCRE2_VER/pcre2-$PCRE2_VER.tar.gz"
+# zlib.net only keeps the *current* release at the site root and moves older
+# tarballs to fossils/, so fossils comes first (OpenResty's own build-win32.sh
+# made the same switch for 1.31.9.1). The plain root URL stays as a second try
+# for the case where $ZLIB_VER is the current release.
 fetch "zlib-$ZLIB_VER.tar.gz" \
-      "https://zlib.net/zlib-$ZLIB_VER.tar.gz" \
       "https://zlib.net/fossils/zlib-$ZLIB_VER.tar.gz" \
+      "https://zlib.net/zlib-$ZLIB_VER.tar.gz" \
       "https://github.com/madler/zlib/releases/download/v$ZLIB_VER/zlib-$ZLIB_VER.tar.gz"
 
 # REUSE=1 skips unpacking / patching / configure when a finished tree exists and
